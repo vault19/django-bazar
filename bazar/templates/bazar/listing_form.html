@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block body %}
+    {% if update %}
+    <h1>{% translate "Update listing" %}</h1>
+    {% else %}
+    <h1>{% translate "Make a new listing" %}</h1>
+    {% endif %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{% if update %}{% translate "Update Listing" %}{% else %}{% translate "New Listing" %}{% endif %}</h3>
+        </div>
+            <div class="panel-body">
+                <form action="" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input class="btn btn-default" type="submit" name="newlisting" value="{% translate "Submit" %}">
+                </form>
+            </div>
+        </div>
+{% endblock %}

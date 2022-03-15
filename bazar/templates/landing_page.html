@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block hero %}
+{% if request.user.is_authenticated and not profile.profile_city %}
+<div class="container p-3">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      {% translate "You do not have a saved perfered city, please update your profile." %}
+      <a class="btn btn-default" href="{% url 'profile_view' %}">{% translate "Update Profile" %}</a></small>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block body %}
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Listing</th>
+      <th scope="col">Price</th>
+      <th scope="col">City</th>
+      <th scope="col">Category</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in object_list %}
+    <tr>
+      <th scope="row"><a href="{% url 'listing_detail_view' item.pk %}">{{ item.title }}</a></th>
+      <td>{{ item.price }}{{ CURRENCY }}</td>
+      <td>{{ item.listing_city }}</td>
+      <td>{{ item.category }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">{% translate "Sorry, no items in this list." %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
