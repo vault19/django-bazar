@@ -14,22 +14,120 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
 
-class IndexView(ListView):
+class AllListingsView(ListView):
     template_name = "landing_page.html"
     model = Listing
 
     def get_queryset(self):
-        return Listing.objects.order_by('category').order_by('city').all
+        sort = self.request.GET.get('sort')
+        listing = Listing.objects.filter(status=Listing.OPEN)
+
+        if sort:
+            listings = listing.order_by(sort)
+        else:
+            listings = listing.order_by('category').order_by('city')
+
+        return listings.all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['cities'] = City.objects.all()
         context['TITLE'] = settings.TITLE
+        context['CURRENCY'] = settings.CURRENCY
+        context['breadcrumbs'] = [{'url': '', 'title': _('Home'), 'active': True},]
+        context['cities'] = City.objects.all()
+        context['city'] = 'all'
+        context['categories'] = Category.objects.filter(parent=None).all()
+        context['category'] = 'all'
 
         if self.request.user.is_authenticated:
             context["profile"] = Profile.objects.get(user=self.request.user)
         else:
-            context["login_form"] = AuthenticationForm()
+            context["profile"] = None
+
+        return context
+
+
+class CityListView(AllListingsView):
+
+    def get_queryset(self):
+        city_slug = self.kwargs.get('city_slug')
+        sort = self.request.GET.get('sort')
+
+        listings = Listing.objects.filter(status=Listing.OPEN).filter(city__slug=city_slug)
+
+        if sort:
+            listings = listings.order_by(sort)
+        else:
+            listings = listings.order_by('category').order_by('city')
+
+        return listings.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        city_slug = self.kwargs.get('city_slug')
+        context['city'] = City.objects.get(slug=city_slug)
+        context['breadcrumbs'] = [
+            {'url': reverse('index_view'), 'title': _('Home')},
+            {'url': '', 'title': context['city'].city, 'active': True},
+        ]
+
+        return context
+
+
+class CityCategoryListView(CityListView):
+
+    def get_queryset(self):
+        city_slug = self.kwargs.get('city_slug')
+        category_slug = self.kwargs.get('category_slug')
+        sort = self.request.GET.get('sort')
+
+        listings = Listing.objects.filter(status=Listing.OPEN).filter(city__slug=city_slug)\
+            .filter(category__slug=category_slug)
+
+        if sort:
+            listings = listings.order_by(sort)
+        else:
+            listings = listings.order_by('category').order_by('city')
+
+        return listings.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_slug = self.kwargs.get('category_slug')
+        context['category'] = Category.objects.get(slug=category_slug)
+        context['breadcrumbs'] = [
+            {'url': reverse('index_view'), 'title': _('Home')},
+            {'url': reverse('city_list_view', kwargs={'city_slug': context['city'].slug}),
+             'title': context['city'].city},
+            {'url': '', 'title': context['category'].name, 'active': True},
+        ]
+
+        return context
+
+
+class CategoryListView(AllListingsView):
+
+    def get_queryset(self, **kwargs):
+        category_slug = self.kwargs.get('category_slug')
+        sort = self.request.GET.get('sort')
+
+        listings = Listing.objects.filter(status=Listing.OPEN).filter(category__slug=category_slug)
+
+        if sort:
+            listings = listings.order_by(sort)
+        else:
+            listings = listings.order_by('category').order_by('city')
+
+        return listings.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_slug = self.kwargs.get('category_slug')
+        context['category'] = Category.objects.get(slug=category_slug)
+        context['breadcrumbs'] = [
+            {'url': reverse('index_view'), 'title': _('Home')},
+            {'url': '', 'title': context['category'].name, 'active': True},
+        ]
         return context
 
 
@@ -72,8 +170,10 @@ class ListingDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_object(self, queryset=None):
         listing = super().get_object()
+
         if not listing.user == self.request.user:
             raise Http404
+
         return listing
 
 
@@ -86,83 +186,24 @@ class CategoryCreateView(CreateView):
         return Category.subcat.filter(parent=None)
 
 
-class CityListView(ListView):
-    template_name = 'bazar/city_listing_list.html'
-    model = Category
-
-    def get_queryset(self):
-        return Category.objects.filter(parent=None)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        city_slug = self.kwargs.get('city_slug')
-        context['TITLE'] = settings.TITLE
-        context['CURRENCY'] = settings.CURRENCY
-        context['city'] = City.objects.get(slug=city_slug)
-        context['cities'] = City.objects.all()
-
-        if self.request.user.is_authenticated:
-            context["profile"] = Profile.objects.get(user=self.request.user)
-        else:
-            context["login_form"] = AuthenticationForm()
-        return context
-
-
-class CityCategoryListView(ListView):
-    model = Listing
-
-    def get_queryset(self, **kwargs):
-        city_slug = self.kwargs.get('city_slug')
-        category_id = self.kwargs.get('category_slug')
-        sort = self.request.GET.get('sort')
-        if sort:
-            return Listing.objects.filter(city__slug=city_slug).filter(category__slug=category_id).order_by(sort)
-        else:
-            return Listing.objects.filter(city__slug=city_slug).filter(category__slug=category_id)
-
-    def get_context_data(self, **kwargs):
-        city_slug = self.kwargs.get('city_slug')
-        category_id = self.kwargs.get('category_slug')
-        context = super().get_context_data(**kwargs)
-        context['category'] = Category.objects.get(slug=category_id)
-        context['city'] = City.objects.get(slug=city_slug)
-        context['category_id'] = category_id
-        context['city_slug'] = city_slug
-        context['TITLE'] = settings.TITLE
-        context['CURRENCY'] = settings.CURRENCY
-
-        return context
-
-
 class ListingDetailView(DetailView):
     model = Listing
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         if self.request.user.is_authenticated:
             context['profile'] = Profile.objects.get(user=self.request.user)
 
+        context['breadcrumbs'] = [
+            {'url': reverse('index_view'), 'title': _('Home')},
+            {'url': reverse('city_list_view', kwargs={'city_slug': context['object'].city.slug}),
+             'title': context['object'].city},
+            {'url': '', 'title': context['object'].title, 'active': True},
+        ]
         context['TITLE'] = settings.TITLE
         context['CURRENCY'] = settings.CURRENCY
 
-        return context
-
-
-class CategoryListView(ListView):
-    model = Listing
-
-    def get_queryset(self, **kwargs):
-        category_id = self.kwargs.get('categorypk')
-        if sort:
-            return Listing.objects.filter(category=category_id).order_by(sort)
-        else:
-            return Listing.objects.filter(category=category_id)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['TITLE'] = settings.TITLE
-        context['CURRENCY'] = settings.CURRENCY
-        context['category_id'] = self.kwargs.get('categorypk')
         return context
 
 
@@ -176,6 +217,10 @@ class ProfileView(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['breadcrumbs'] = [
+            {'url': reverse('index_view'), 'title': _('Home')},
+            {'url': '', 'title': _('Profile'), 'active': True},
+        ]
         context['TITLE'] = settings.TITLE
         context['CURRENCY'] = settings.CURRENCY
         context['user_listings'] = Listing.objects.filter(user=self.request.user)

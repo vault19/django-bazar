@@ -1,0 +1,26 @@
+{% load i18n %}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">{% translate "Listing" %}</th>
+      <th scope="col">{% translate "Price" %}</th>
+      <th scope="col">{% translate "City" %}</th>
+      <th scope="col">{% translate "Category" %}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in object_list %}
+    <tr>
+      <th scope="row"><a href="{% url 'listing_detail_view' item.pk %}">{{ item.title }}</a></th>
+      <td>{{ item.price }}{{ CURRENCY }}</td>
+      <td>{{ item.listing_city }}</td>
+      <td>{{ item.category }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">{% translate "Sorry, no items in this list." %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

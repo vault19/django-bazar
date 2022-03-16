@@ -15,28 +15,38 @@
 {% endblock %}
 
 {% block body %}
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Listing</th>
-      <th scope="col">Price</th>
-      <th scope="col">City</th>
-      <th scope="col">Category</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in object_list %}
-    <tr>
-      <th scope="row"><a href="{% url 'listing_detail_view' item.pk %}">{{ item.title }}</a></th>
-      <td>{{ item.price }}{{ CURRENCY }}</td>
-      <td>{{ item.listing_city }}</td>
-      <td>{{ item.category }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4">{% translate "Sorry, no items in this list." %}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="row">
+  <div class="col-md-3">
+    <div class="list-group">
+      {% if category == 'all' %}
+        {% for c in cities %}
+        <a href="{% url 'city_list_view' c.slug %}" class="list-group-item{% if city.slug == c.slug %} active{% endif %}">{{ c.city }}</a>
+        {% endfor %}
+        <a href="{% url 'index_view' %}" class="list-group-item{% if city == 'all' %} active{% endif %}">{% translate "All" %}</a>
+      {% else %}
+        {% for c in cities %}
+        <a href="{% url 'city_category_list_view' c.slug category.slug %}" class="list-group-item{% if city.slug == c.slug %} active{% endif %}">{{ c.city }}</a>
+        {% endfor %}
+        <a href="{% url 'category_list_view' category.slug %}" class="list-group-item{% if city == 'all' %} active{% endif %}">{% translate "All" %}</a>
+      {% endif %}
+    </div>
+    <br />
+    <div class="list-group">
+      {% if city == 'all' %}
+        {% for cat in categories %}
+        <a href="{% url 'category_list_view' cat.slug %}" class="list-group-item{% if cat.slug == category.slug %} active{% endif %}">{{ cat.name }}</a>
+        {% endfor %}
+        <a href="{% url 'index_view' %}" class="list-group-item{% if category == 'all' %} active{% endif %}">{% translate "All" %}</a>
+      {% else %}
+        {% for cat in categories %}
+        <a href="{% url 'city_category_list_view' city.slug cat.slug %}" class="list-group-item{% if cat.slug == category.slug %} active{% endif %}">{{ cat.name }}</a>
+        {% endfor %}
+        <a href="{% url 'city_list_view' city.slug %}" class="list-group-item{% if category == 'all' %} active{% endif %}">{% translate "All" %}</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-md-9">
+    {% include "bazar/includes/table.html" with object_list=object_list %}
+  </div>
+</div>
 {% endblock %}
