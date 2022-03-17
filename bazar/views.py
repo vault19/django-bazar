@@ -150,6 +150,17 @@ class ListingCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse("listing_detail_view", args=(self.object.id,))
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['TITLE'] = settings.TITLE
+        context['CURRENCY'] = settings.CURRENCY
+        context['breadcrumbs'] = [
+            {'url': reverse('index_view'), 'title': _('Home')},
+            {'url': '', 'title': _('New Listing'), 'active': True},
+        ]
+        context["profile"] = Profile.objects.get(user=self.request.user)
+
+        return context
 
 class ListingUpdateView(LoginRequiredMixin, UpdateView):
     model = Listing

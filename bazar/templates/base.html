@@ -16,19 +16,21 @@
         <!-- Fixed navbar -->
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
           <div class="container-fluid">
-            <a class="navbar-brand" href="/">bazar.vault19.eu</a>
+            <a class="navbar-brand" href="/">{% translate "Home" %}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
               <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                {% if request.user.is_authenticated %}
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'listing_create_view' %}">{% translate "New Listing" %}</a>
                 </li>
-                {% if request.user.is_authenticated and profile.profile_city %}
+                {% if profile.profile_city %}
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'city_list_view' profile.profile_city.slug %}">{% translate "My City" %}</a></li>
                 </li>
+                {% endif %}
                 {% endif %}
               </ul>
             </div>
@@ -132,10 +134,12 @@
             </div>
             <div class="col-md-4">
               <ul class="nav justify-content-end">
-                <li class="nav-item"><a href="{% url 'index_view' %}" class="nav-link px-2 text-muted">{% translate "Home" %}</a></li>
+                <li class="nav-item"><a href="{% url 'index_view' %}" class="nav-link px-2 text-muted">{{ TITLE }}</a></li>
+                {% if request.user.is_authenticated %}
                 <li class="nav-item"><a href="{% url 'listing_create_view' %}" class="nav-link px-2 text-muted">{% translate "New Listing" %}</a></li>
-                {% if request.user.is_authenticated and profile.profile_city %}
+                {% if profile.profile_city %}
                 <li class="nav-item"><a href="{% url 'city_list_view' profile.profile_city.slug %}" class="nav-link px-2 text-muted">{% translate "My City" %}</a></li>
+                {% endif %}
                 {% endif %}
               </ul>
             </div>
