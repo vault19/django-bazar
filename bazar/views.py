@@ -1,7 +1,7 @@
 import operator
 from functools import reduce
 from django.db.models import Q
-# from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 from bazar.models import Listing, Profile, Category, City
 from django.views.generic import ListView, CreateView, DetailView
 # from django.views.generic.base import TemplateView
@@ -140,11 +140,26 @@ class RegisterView(CreateView):
 class ListingCreateView(LoginRequiredMixin, CreateView):
     login_url = '/login/'
     model = Listing
-    fields = ['category', 'city', 'title', 'price', 'description', 'type', 'status', 'photo']
+    fields = ['category', 'city', 'type', 'status', 'title', 'price', 'description', 'photo']
+
+    def get_initial(self):
+        initial = super().get_initial()
+
+        category_slug = self.kwargs.get('category_slug')
+
+        if category_slug:
+            cat = get_object_or_404(Category, slug=category_slug)
+            initial['category'] = cat.pk
+
+        if self.request.user.profile.profile_city:
+            initial['city'] = self.request.user.profile.profile_city.pk
+
+        return initial
 
     def form_valid(self, form):
         listing = form.save(commit=False)
         listing.user = self.request.user
+
         return super().form_valid(form)
 
     def get_success_url(self):
