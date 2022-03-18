@@ -4,18 +4,20 @@
   <thead>
     <tr>
       <th scope="col">{% translate "Listing" %}</th>
-      <th scope="col">{% translate "Price" %}</th>
       <th scope="col">{% translate "City" %}</th>
       <th scope="col">{% translate "Category" %}</th>
+      <th scope="col">{% translate "Type" %}</th>
+      <th scope="col">{% translate "Price" %}</th>
     </tr>
   </thead>
   <tbody>
     {% for item in object_list %}
     <tr>
       <th scope="row"><a href="{% url 'listing_detail_view' item.pk %}">{{ item.title }}</a></th>
-      <td>{{ item.price }} {{ CURRENCY }}</td>
-      <td>{{ item.listing_city }}</td>
+      <td>{{ item.city }}</td>
       <td>{{ item.category }}</td>
+      <td>{{ item.get_type_display }}</td>
+      <td>{{ item.price }} {{ CURRENCY }}</td>
     </tr>
     {% empty %}
     <tr>

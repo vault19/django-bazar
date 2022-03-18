@@ -1,23 +1,55 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load markdownify %}
 
 {% block hero %}
-  <p class="text-center">
-    Vśetky dojednané veci k odberu pre cielenú pomoc konkrétneho človeka je nutné dopraviť do skladu komunitného centra.
-
-    {{ object.listing_city.description }}
-  </p>
+{% if object.type == 'R' %}
+<div class="container p-3">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <p>{% translate "Všetky dojednané veci k odberu pre cielenú pomoc konkrétneho človeka je nutné dopraviť do skladu komunitného centra." %}</p>
+      {{ object.city.description|markdownify }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block body %}
     <div class="row">
-        <div class="col-md-7">
-            <h2 class="postingtitle"><small>&#9734;</small> {{ object.title }} <span> -  {{ object.price }}{{ CURRENCY }}</span><small> ({{ object.city }})</small></h2>
-            <br>
-            <img src="{{ object.photo_url }}" alt="" />
-            <br>
-            <br>
+        <div class="col">
+          <h2>{{ object.title }}</h2>
+          <h3>{{ object.get_type_display }} <small> ({{ object.city }})</small></h3>
+          <p class="postinfo">{% translate "posted" %}: <span class="timel">{{ object.created }}</span></p>
         </div>
+    </div>
+    <div class="row">
+        <div class="col">
+          <img src="{{ object.photo_url }}" alt="" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+          <p>{{ object.description|markdownify }}</p>
+          <br>
+          <p> {% translate "Price" %}: {{ object.price }} {{ CURRENCY }}</p>
+          <p>
+          {% if request.user.is_authenticated %}
+            {% translate "Contact" %}: {{ object.user.profile.preferred_contact }}
+          {% else %}
+            {% translate "Please login to see the contact." %}
+          {% endif %}
+          </p>
+          <br>
+          {% if DEBUG %}<p class="postinfo">{% translate "Post ID:" %} {{ object.id }}</p>{% endif %}
+
+          {% if object.user == request.user %}
+              <a href="{% url 'listing_update_view' object.id %}">{% translate "Update Your Listing" %}</a>
+              <br>
+              <a href="{% url 'listing_delete_view' object.pk %}">{% translate "Delete" %}</a>
+          {% endif %}
+        </div>
+    </div>
+
 {#        <div class="col-md-5">#}
 {#            <div class="mapAndAttrs pull-left">#}
 {#            <div class="tsb">#}
@@ -31,24 +63,4 @@
 {#            </div>#}
 {#        </div>#}
     </div>
-    <p>{{ object.description }}</p>
-    <br>
-    <p> {% translate "Price" %}: {{ object.price }}{{ CURRENCY }}</p>
-    <p>
-    {% if request.user.is_authenticated %}
-      {% translate "Contact" %}: {{ object.user.profile.preferred_contact }}
-    {% else %}
-      {% translate "Please login to see the contact." %}
-    {% endif %}
-    </p>
-    <br>
-    <div>
-      {% if DEBUG %}<p class="postinfo">{% translate "Post ID:" %} {{ object.id }}</p>{% endif %}
-      <p class="postinfo">{% translate "posted" %}: <span class="timel">{{ object.created }}</span></p>
-    </div>
-    {% if object.user == request.user %}
-        <a href="{% url 'listing_update_view' object.id %}">{% translate "Update Your Listing" %}</a>
-        <br>
-        <a href="{% url 'listing_delete_view' object.pk %}">{% translate "Delete" %}</a>
-    {% endif %}
 {% endblock %}
