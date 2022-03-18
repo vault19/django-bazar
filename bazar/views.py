@@ -105,6 +105,29 @@ class CityCategoryListView(CityListView):
         return context
 
 
+class CategoriesListView(ListView):
+    template_name = "categories.html"
+    model = Category
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['TITLE'] = settings.TITLE
+        context['CURRENCY'] = settings.CURRENCY
+        context['breadcrumbs'] = [
+            {'url': reverse('index_view'), 'title': _('Home')},
+            {'url': '', 'title': _('Categories'), 'active': True},
+        ]
+        context['categories'] = Category.objects.filter(parent=None).all()
+
+        if self.request.user.is_authenticated:
+            context["profile"] = Profile.objects.get(user=self.request.user)
+        else:
+            context["profile"] = None
+
+        return context
+
+
 class CategoryListView(AllListingsView):
 
     def get_queryset(self, **kwargs):

@@ -1,10 +1,14 @@
 import uuid
+import os
+
+from PIL import Image
 
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
+from django.templatetags.static import static
 
 
 # Create your models here.
@@ -37,6 +41,21 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.avatar:
+            imag = Image.open(self.avatar.path)
+
+            if imag.width > 400 or imag.height > 300:
+                output_size = (400, 300)
+                imag.thumbnail(output_size)
+                imag.save(self.avatar.path)
+
+    @property
+    def static_slug(self):
+        return os.path.join('bazar', 'pics', self.slug +'.png')
 
 
 class Listing(models.Model):

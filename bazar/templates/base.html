@@ -22,6 +22,9 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
               <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'categories_list_view' %}">{% translate "Categories" %}</a>
+                </li>
                 {% if request.user.is_authenticated %}
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'listing_create_view' %}">{% translate "New Listing" %}</a>
@@ -135,6 +138,7 @@
             <div class="col-md-4">
               <ul class="nav justify-content-end">
                 <li class="nav-item"><a href="{% url 'index_view' %}" class="nav-link px-2 text-muted">{{ TITLE }}</a></li>
+                <li class="nav-item"><a href="{% url 'categories_list_view' %}" class="nav-link px-2 text-muted">{% translate "Categories" %}</a></li>
                 {% if request.user.is_authenticated %}
                 <li class="nav-item"><a href="{% url 'listing_create_view' %}" class="nav-link px-2 text-muted">{% translate "New Listing" %}</a></li>
                 {% if profile.profile_city %}

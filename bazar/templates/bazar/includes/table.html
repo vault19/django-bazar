@@ -13,7 +13,7 @@
     {% for item in object_list %}
     <tr>
       <th scope="row"><a href="{% url 'listing_detail_view' item.pk %}">{{ item.title }}</a></th>
-      <td>{{ item.price }}{{ CURRENCY }}</td>
+      <td>{{ item.price }} {{ CURRENCY }}</td>
       <td>{{ item.listing_city }}</td>
       <td>{{ item.category }}</td>
     </tr>
